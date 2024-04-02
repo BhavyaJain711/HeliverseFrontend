@@ -8,7 +8,7 @@ import axios from 'axios';
 import App from './App.jsx'
 import './index.css'
 const persistedStore=persistStore(store);
-const baseURL = "http://localhost:5000/api/";
+const baseURL = "https://heliverse-backend-ffuw.vercel.app/api/";
 console.log(baseURL);
 axios.defaults.baseURL=baseURL;
 ReactDOM.createRoot(document.getElementById('root')).render(
