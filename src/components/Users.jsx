@@ -4,7 +4,7 @@ import ReactPaginate from 'react-paginate';
 import axios from "axios";
 import queryString from 'query-string';
 import { useSelector } from "react-redux";
-import { addUser, removeUser, setUser, clearUsers } from "../state";
+import state, { addUser, removeUser, setUser, clearUsers, setSelectedUsersDomainStore } from "../state";
 import { store } from "../store";
 import { useNavigate } from "react-router-dom";
 
@@ -12,33 +12,38 @@ function Items({ currentItems }) {
     const Navigate = useNavigate();
     const selectedUsersFromStore = useSelector((state) => state.savedUsers);
     const [selectedUsers, setSelectedUsers] = useState([]); // Initialize with data from Redux store
-
+    const [domainByAvailability, setDomainByAvailability] = useState([]);
+    const [selectedUsersDomain, setSelectedUsersDomain] = useState(useSelector((state) => state.selectedUsersDomain));
     useEffect(() => {
         setSelectedUsers(selectedUsersFromStore);
         console.log('Selected users from store:',selectedUsersFromStore);
+        selectedUsersDomain&&setDomainByAvailability([...selectedUsersDomain]);
+        
     }, []);
 
     useEffect(() => {
         console.log('Selected users:',selectedUsers);
     }, [selectedUsers]);
     
-    const checkValid=(userIds)=>{
-        const users= currentItems.filter(user=>userIds.includes(user._id));
-        console.log(users);
-        const domainByAvailability = [];
-        users.forEach(user=>domainByAvailability.push(user.domain+(user.available?'true':'false')));
-        console.log(domainByAvailability);
-        const domainSet = new Set(domainByAvailability);
-        console.log(domainSet);
-        if(domainSet.size!==domainByAvailability.length){
+    const checkValid = (userId) => {
+        const user = currentItems.filter(user => userId === user._id)[0];
+        const updatedDomainByAvailability = [...domainByAvailability, (user.domain + (user.available ? 'true' : 'false'))];
+        console.log("here", user);
+        console.log(updatedDomainByAvailability);
+        
+        // Check for duplicate domains
+        const domainSet = new Set(updatedDomainByAvailability);
+        if (domainSet.size !== updatedDomainByAvailability.length) {
+            // setDomainByAvailability(prevDomain => prevDomain.filter((domain, index) => updatedDomainByAvailability.indexOf(domain) === index));
             return false;
-        }
-        else{
+        } else {
+            setSelectedUsersDomain(updatedDomainByAvailability);
+            setDomainByAvailability(updatedDomainByAvailability);
+            store.dispatch(setSelectedUsersDomainStore(updatedDomainByAvailability));
             return true;
         }
-
-
-    }
+    };
+    
     const createTeam = () => {
         axios.post('team', { users: selectedUsers }).then((response) => {
             console.log(response.data);
@@ -60,7 +65,7 @@ function Items({ currentItems }) {
                     selectedUsers.filter(selectedUser=>selectedUser===user._id).length>0?true:false
                 }
                 handleSelect={()=>{
-                    if(checkValid([...selectedUsers,user._id])){
+                    if(checkValid(user._id)){
                     setSelectedUsers([...selectedUsers,user._id]);
                     store.dispatch(addUser(user._id));
                     }else{
@@ -81,7 +86,9 @@ function Items({ currentItems }) {
         <div className="grid place-items-center gap-2 w-fit mx-auto md:grid-cols-2">
         <button onClick={() => {
             setSelectedUsers([]);
+            setDomainByAvailability([]);
             store.dispatch(setUser([]));
+            store.dispatch(setSelectedUsersDomainStore([]));
         }}
         className="bg-red-500 flex justify-center mx-auto m-4  text-white p-2 rounded-lg"
         >Remove All Users</button>

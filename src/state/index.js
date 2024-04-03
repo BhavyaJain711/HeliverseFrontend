@@ -4,6 +4,7 @@ const initialState={
 }
 export const userSlice = createSlice({
     name:"users",
+    selectedUsersDomain:[],
     initialState,
     reducers:{
         addUser:(state,action)=>{
@@ -18,12 +19,15 @@ export const userSlice = createSlice({
         },
         setUser:(state,action)=>{
             state.savedUsers = action.payload;
-        }
+        },
+        setSelectedUsersDomainStore:(state,action)=>{
+            state.selectedUsersDomain = action.payload;
+        },
 
 
 
     }
 })
 
-export const {addUser,removeUser,clearUsers,setUser} = userSlice.actions;
+export const {addUser,removeUser,clearUsers,setUser,setSelectedUsersDomainStore} = userSlice.actions;
 export default userSlice.reducer;
