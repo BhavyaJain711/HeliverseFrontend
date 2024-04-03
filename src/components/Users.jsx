@@ -49,6 +49,7 @@ function Items({ currentItems }) {
             console.log(response.data);
             alert('Team created successfully');
             store.dispatch(clearUsers());
+            store.dispatch(setSelectedUsersDomainStore([]));
             Navigate('/team/'+response.data._id)
         }).catch((error) => {
             console.log(error);
@@ -75,7 +76,10 @@ function Items({ currentItems }) {
                 }
                 handleRemove={()=>{
                     setSelectedUsers(selectedUsers.filter(selectedUser=>selectedUser!==user._id));
+                    setDomainByAvailability(domainByAvailability.filter(domain => domain !== (user.domain + (user.available ? 'true' : 'false'))));
+
                     store.dispatch(removeUser(user._id));
+                    store
                 }
                 }
                  />
